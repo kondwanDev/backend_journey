@@ -51,3 +51,20 @@ def get_books (conn = Depends (get_db)):
     cur.close()
 
     return books
+
+@app.get ("/books/{books}")
+def get_book_by_id (book_id: int, conn = Depends (get_db)):
+
+    cur = conn.cursor (row_factory = dict_row)
+    
+    cur.execute ("SELECT * FROM books WHERE id = %s",
+                 (book_id,)
+                 )
+    book = cur.fetchone()
+
+    cur.close ()
+
+    if book is None:
+        return {"Message":"no book found"}
+    
+    return book
