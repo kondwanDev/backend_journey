@@ -68,3 +68,39 @@ def get_book_by_id (book_id: int, conn = Depends (get_db)):
         return {"Message":"no book found"}
     
     return book
+
+@app.put ("/books/{books}")
+def update_book(book_id: int, book: Book, conn = Depends(get_db)):
+
+    cur = conn.cursor (row_factory = dict_row)
+
+    cur.execute ("SELECT * FROM BOOKS WHERE id = %s",
+                 (book_id,))
+    
+    exesting = cur.fetchone()
+    
+    if exesting is None:
+        return {"message":"book not found"}
+    
+    cur.execute ("""
+        UPDATE books
+        SET title = %s,
+            author = %s,
+            year   = %s   
+        WHERE id   = %s      
+         """,
+         (book.title, book.author,book.year, book_id)
+         )
+    
+    conn.commit()
+    cur.close()
+
+    return {
+        "message" : "book updated successfuly",
+        "data": {
+            "id": book_id,
+            "title": book.title,
+            "author": book.author,
+            "year" : book.year 
+        }
+    }
