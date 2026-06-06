@@ -21,10 +21,9 @@ def get_db():
         conn.close()
 
 
-@app.post ("/book")
+@app.post ("/books")
 def create_book (book: Book, conn = Depends(get_db)):
 
-    conn = get_connection()
     cur =conn.cursor()
 
     cur.execute(
@@ -52,7 +51,7 @@ def get_books (conn = Depends (get_db)):
 
     return books
 
-@app.get ("/books/{books}")
+@app.get ("/books/{book_id}")
 def get_book_by_id (book_id: int, conn = Depends (get_db)):
 
     cur = conn.cursor (row_factory = dict_row)
@@ -69,7 +68,7 @@ def get_book_by_id (book_id: int, conn = Depends (get_db)):
     
     return book
 
-@app.put ("/books/{books}")
+@app.put ("/books/{book_id}")
 def update_book(book_id: int, book: Book, conn = Depends(get_db)):
 
     cur = conn.cursor (row_factory = dict_row)
@@ -77,9 +76,9 @@ def update_book(book_id: int, book: Book, conn = Depends(get_db)):
     cur.execute ("SELECT * FROM BOOKS WHERE id = %s",
                  (book_id,))
     
-    exesting = cur.fetchone()
+    existing = cur.fetchone()
     
-    if exesting is None:
+    if existing is None:
         return {"message":"book not found"}
     
     cur.execute ("""
@@ -104,3 +103,26 @@ def update_book(book_id: int, book: Book, conn = Depends(get_db)):
             "year" : book.year 
         }
     }
+
+@app.delete ("/books/{book_id}")
+def delete_book (book_id: int, conn = Depends (get_db)):
+
+    cur = conn.cursor (row_factory = dict_row)
+
+    cur.execute ("SELECT * FROM books WHERE id = %s",
+                 (book_id,))
+    existing = cur.fetchone()
+
+    if existing is None:
+        return {"message" : "book not found"}
+
+    cur.execute ("DELETE FROM books WHERE id = %s",
+                 (book_id,))
+
+    conn.commit()
+    cur.close()
+
+    return {
+        "message" : "book deleted successfuly",
+        "deleted_book" : existing
+    } 
