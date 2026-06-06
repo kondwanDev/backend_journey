@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi import Depends
+from fastapi import Depends # for dependency wrapper function
 from database import get_connection
+from psycopg.rows import dict_row # allow to return dictionary instead of tuples
 
 app = FastAPI()
 
@@ -9,7 +10,7 @@ class Book (BaseModel):
     title : str
     author : str
     year : int
-
+# it tells api to connect endpoint auto when request comes (dependency wrapper)
 def get_db():
    # """function that connect endpoints to database automatically"""
     conn = get_connection()
@@ -41,22 +42,12 @@ def create_book (book: Book, conn = Depends(get_db)):
 @app.get ("/books")
 def get_books (conn = Depends (get_db)):
 
-    cur = conn.cursor()
+    cur = conn.cursor(row_factory = dict_row) # allows first apply to return dict auto
 
     cur.execute ("SELECT * FROM books")
-    rows = cur.fetchall()
+    books = cur.fetchall()
 
-    books = [
-      { 
-         "id":row[0],
-            "title": row[1],
-            "author": row[2],
-            "year":row[3]
-      }
-       for row in rows
-    ]
-
-  
+   
     cur.close()
 
     return books
