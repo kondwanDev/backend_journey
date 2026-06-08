@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
 from fastapi import Depends # for dependency wrapper function
+from fastapi import HTTPException, status
 from database import get_connection
 from psycopg.rows import dict_row # allow to return dictionary instead of tuples
 
@@ -24,8 +25,13 @@ def get_db():
         conn.close()
 
 
-@app.post ("/books")
+@app.post ("/books", status_code= status.HTTP_201_CREATED)
 def create_book (book: Book, conn = Depends(get_db)):
+
+    if book.year < 0:
+        raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
+                             detail= "Year cannot be negative"
+                             )
 
     cur =conn.cursor()
 
@@ -39,7 +45,13 @@ def create_book (book: Book, conn = Depends(get_db)):
     conn.commit()
     cur.close()
 
-    return {"message":"book created successfully"}
+    return {"message":"book created successfully",
+            "Book":{
+                "title":book.title,
+                "author":book.author,
+                "year":book.year
+            }
+            }
 
 @app.get ("/books")
 def get_books (conn = Depends (get_db)):
@@ -67,12 +79,20 @@ def get_book_by_id (book_id: int, conn = Depends (get_db)):
     cur.close ()
 
     if book is None:
-        return {"Message":"no book found"}
+        raise HTTPException (
+            status_code= status.HTTP_404_NOT_FOUND,
+            detail = "Book not found"
+        )
     
     return book
 
 @app.put ("/books/{book_id}")
 def update_book(book_id: int, book: Book, conn = Depends(get_db)):
+
+    if book.year < 0:
+        raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
+                             detail= "Year cannot be negative"
+                             )
 
     cur = conn.cursor (row_factory = dict_row)
 
@@ -82,7 +102,10 @@ def update_book(book_id: int, book: Book, conn = Depends(get_db)):
     existing = cur.fetchone()
     
     if existing is None:
-        return {"message":"book not found"}
+        raise HTTPException (
+            status_code= status.HTTP_404_NOT_FOUND,
+            detail= "Book not found"
+        )
     
     cur.execute ("""
         UPDATE books
@@ -107,7 +130,7 @@ def update_book(book_id: int, book: Book, conn = Depends(get_db)):
         }
     }
 
-@app.delete ("/books/{book_id}")
+@app.delete ("/books/{book_id}", status_code= status.HTTP_204_NO_CONTENT)
 def delete_book (book_id: int, conn = Depends (get_db)):
 
     cur = conn.cursor (row_factory = dict_row)
@@ -117,7 +140,10 @@ def delete_book (book_id: int, conn = Depends (get_db)):
     existing = cur.fetchone()
 
     if existing is None:
-        return {"message" : "book not found"}
+        raise HTTPException (
+            status_code= status.HTTP_404_NOT_FOUND,
+            detail= "Book not found"
+        )
 
     cur.execute ("DELETE FROM books WHERE id = %s",
                  (book_id,))
@@ -125,10 +151,7 @@ def delete_book (book_id: int, conn = Depends (get_db)):
     conn.commit()
     cur.close()
 
-    return {
-        "message" : "book deleted successfuly",
-        "deleted_book" : existing
-    } 
+    return # delete returns nothing thatswhy
 
 class UpdatedBook (BaseModel):
     title : Optional[str] = None
@@ -142,6 +165,11 @@ def update_book (
     book: UpdatedBook,
     conn = Depends(get_db)
 ):
+  
+  if book.year < 0:
+        raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
+                             detail= "Year cannot be negative"
+                             )
   cur = conn.cursor (row_factory = dict_row)
 
   cur.execute ("SELECT * FROM books WHERE id = %s",
@@ -150,7 +178,10 @@ def update_book (
   existing = cur.fetchone()
 
   if existing is None:
-    return {"message" : "no book found"}
+    raise HTTPException (
+        status_code= status.HTTP_404_NOT_FOUND,
+        detail= "Book not found"
+    )
 
   new_title = book.title if book.title is not None else existing["title"]
   new_author = book.author if book.author is not None else existing["author"]
