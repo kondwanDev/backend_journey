@@ -35,10 +35,10 @@ def delete_book (book_id: int, conn = Depends (get_db)):
     return BookService.delete_book (book_id, conn)
 
 @router.patch ("/books/{book_id}")
-def patch_book (
+def patch_books (
     book_id: int,
     book: UpdatedBook,
     conn = Depends(get_db)
 ):
   
-  return BookService.patch_book(book_id, book, conn)
+  return BookService.patch_books(book_id, book, conn)
