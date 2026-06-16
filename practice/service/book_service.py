@@ -11,10 +11,7 @@ class BookService:
     
     @staticmethod
     def create_book (book:Book, conn):
-        if book.year < 0:
-            raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
-                                 detail= "year should be positive")
-
+       
         BookRepository.create_book(book, conn)
 
         return {"message":"Book created successfully",
@@ -44,9 +41,7 @@ class BookService:
             raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
                                  detail= "Book not found")
         
-        if book.year < 0:
-            raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
-                                 detail= "year cannot be negative")
+       
         
         BookRepository.update_book (book_id, book, conn)
 
@@ -82,9 +77,7 @@ class BookService:
             raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
                                  detail= "Book not found")
         
-        if book.year is not None and book.year < 0:
-            raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
-                                 detail= "year cannot be negative")
+       
         
         #take new title if title is not none or else take the existing title
         new_title = book.title if book.title is not None else existing["title"]
