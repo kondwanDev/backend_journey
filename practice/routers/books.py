@@ -3,28 +3,37 @@ from psycopg.rows import dict_row # allow to return dictionary instead of tuples
 from service.book_service import BookService
 
 from dependencies import get_db
-from schemas.book import Book, UpdatedBook
+from schemas.book import Book, UpdatedBook, BookResponse
 from fastapi import status
 
 router = APIRouter() #a mini FastAPI app for books only
 
-@router.post ("/books", status_code= status.HTTP_201_CREATED)
+@router.post ("/books", 
+              status_code= status.HTTP_201_CREATED,
+              response_model= BookResponse
+              )
 def create_book (book: Book, conn = Depends(get_db)):
 
     return BookService.create_book(book, conn)
 
-@router.get("/books")
+@router.get("/books",
+            response_model= list [BookResponse]
+            ) #list[] bcuz repo returns a list of dicts
 def get_books(conn = Depends(get_db)):
    
    return BookService.get_books(conn)
     
 
-@router.get ("/books/{book_id}")
+@router.get ("/books/{book_id}",
+             response_model= BookResponse
+             )
 def get_book_by_id (book_id: int, conn = Depends (get_db)):
 
     return BookService.get_book_by_id (book_id, conn)
 
-@router.put ("/books/{book_id}")
+@router.put ("/books/{book_id}",
+             response_model= BookResponse
+             )
 def update_book(book_id: int, book: Book, conn = Depends(get_db)):
 
    return BookService.update_book (book_id, book, conn)
@@ -34,7 +43,10 @@ def delete_book (book_id: int, conn = Depends (get_db)):
 
     return BookService.delete_book (book_id, conn)
 
-@router.patch ("/books/{book_id}")
+@router.patch ("/books/{book_id}",
+               response_model= BookResponse
+               
+               )
 def patch_books (
     book_id: int,
     book: UpdatedBook,

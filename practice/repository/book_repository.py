@@ -22,12 +22,16 @@ class BookRepository:
         cur.execute ("""
                      INSERT INTO books (title, author, year)
                      VALUES (%s, %s, %s)
+                     RETURNING id, title, author, year
                  """,
                  (book.title, book.author, book.year)
                  )
+        created_book = cur.fetchone()
         
         conn.commit()
         cur.close()
+
+        return created_book
 
     @staticmethod
     def get_book_by_id (book_id: int, conn):
@@ -54,13 +58,16 @@ class BookRepository:
                          author = %s,
                          year = %s
                      WHERE id = %s
+                     RETURNING id, title, author, year
                  """,
                  (book.title, book.author, book.year, book_id)
                  )
-        
-    
+        updated_book = cur.fetchone()
+
         conn.commit()
         cur.close()
+
+        return updated_book
 
     @staticmethod
     def delete_book (book_id:int, conn):
@@ -85,10 +92,14 @@ class BookRepository:
                          author = %s,
                          year = %s
                      WHERE id = %s
+                     RETURNING id, title, author, year
                  """,
                  (title, author, year, book_id)
                  )
+        Updated_book = cur.fetchone()
         
         conn.commit()
         cur.close()
+
+        return Updated_book
       
