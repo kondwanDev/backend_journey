@@ -12,14 +12,9 @@ class BookService:
     @staticmethod
     def create_book (book:Book, conn):
        
-        BookRepository.create_book(book, conn)
+       created_book = BookRepository.create_book(book, conn)
 
-        return {"message":"Book created successfully",
-                "created Book":{
-                    "title":book.title,
-                    "author":book.author,
-                    "year":book.year
-                }}
+       return created_book
     
     @staticmethod
     def get_book_by_id (book_id: int, conn):
@@ -35,25 +30,13 @@ class BookService:
     @staticmethod
     def update_book (book_id: int, book: Book, conn):
         
-        existing = BookRepository.get_book_by_id (book_id,conn) # we are re_using the getbyid()
-                                                     
-        if existing is None:
+        updated_book = BookRepository.update_book (book_id, book, conn)
+                                            
+        if updated_book is None:
             raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
                                  detail= "Book not found")
         
-       
-        
-        BookRepository.update_book (book_id, book, conn)
-
-        return {
-            "message": "Book updated successfully",
-            "Updated_book": {
-                "id" : book_id,
-                "title" : book.title,
-                "author" : book.author,
-                "year" : book.year
-            }
-        } 
+        return updated_book
 
     @staticmethod
     def delete_book (book_id:int, conn):
@@ -85,14 +68,6 @@ class BookService:
         new_year = book.year if book.year is not None else existing["year"]
 
         
-        BookRepository.patch_books (book_id, new_title, new_author, new_year, conn)
+        updated_book = BookRepository.patch_books (book_id, new_title, new_author, new_year, conn)
 
-        return {
-            "message": "Book updated successfullly",
-            "updated book": {
-                "id" : book_id,
-                "title" : new_title,
-                "author" : new_author,
-                "year" : new_year
-            }
-        }
+        return updated_book
