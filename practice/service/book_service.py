@@ -4,6 +4,17 @@ from  fastapi import HTTPException,status
 from repository.book_repository import BookRepository
 
 class BookService:
+
+    @staticmethod
+    def get_existing_book (book_id, conn):
+        book = BookRepository.get_book_by_id (book_id, conn)
+        if book is None:
+            raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
+                                 detail= "Book not found"
+                                 )
+        
+        return book
+
     @staticmethod
     def get_books(conn):
 
@@ -19,20 +30,14 @@ class BookService:
     @staticmethod
     def get_book_by_id (book_id: int, conn):
         
-       book = BookRepository.get_book_by_id (book_id, conn)
-       if book is None:
-            raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
-                                detail="book not found"
-                                )
-       
-       return book 
+       return BookService.get_existing_book (book_id, conn)
     
     @staticmethod
     def update_book (book_id: int, book: Book, conn):
         
         updated_book = BookRepository.update_book (book_id, book, conn)
                                             
-        if updated_book is None:
+        if updated_book is None:# no helper here cuz repo is doing checking by itself
             raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
                                  detail= "Book not found")
         
@@ -41,11 +46,7 @@ class BookService:
     @staticmethod
     def delete_book (book_id:int, conn):
         
-        existing = BookRepository.get_book_by_id(book_id, conn)
-
-        if existing is None:
-            raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
-                                 detail="Book not found")
+        BookService.get_existing_book (book_id, conn)
         
         BookRepository.delete_book (book_id, conn)
         
@@ -54,13 +55,8 @@ class BookService:
     @staticmethod
     def patch_books (book_id: int, book: UpdatedBook, conn):
         
-        existing = BookRepository.get_book_by_id (book_id, conn)
+        existing = BookService.get_existing_book (book_id, conn)
         
-        if existing is None:
-            raise HTTPException (status_code= status.HTTP_404_NOT_FOUND,
-                                 detail= "Book not found")
-        
-       
         
         #take new title if title is not none or else take the existing title
         new_title = book.title if book.title is not None else existing["title"]
