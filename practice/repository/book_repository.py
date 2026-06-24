@@ -4,33 +4,48 @@ from schemas.book import Book,UpdatedBook
 class BookRepository:
 
     @staticmethod
-    def get_books(conn, title:str = None, author: str = None):
+    def get_books(conn, title:str = None, author: str = None, limit:int = 10, offset:int = 0):
 
         cur = conn.cursor (row_factory = dict_row)
 
         query = "SELECT * FROM books"
+        query_count = "SELECT COUNT(*) AS total FROM books"
 
         condition = []
         params = []
 
         if title:
             condition.append ("title ILIKE %s")
-            params.append ("f%{title}%")
+            params.append (f"%{title}%")
         
         if author:
             condition.append ("author ILIKE %s")
             params.append (f"%{author}%")
 
         if condition:
-            query += " WHERE " + " AND ".join(condition)
-        
-        cur.execute (query, params)
+            query_clause= " WHERE " + " AND ".join(condition)
+            query += query_clause
+            query_count += query_clause
 
+        # get total
+        cur.execute (query_count, params)
+
+        total = cur.fetchone()["total"] # count return one row "total"
+
+        # pagination
+        query += " ORDER BY id DESC LIMIT %s OFFSET %s "
+        cur.execute (query, params + [limit, offset])
         books = cur.fetchall()
+
         
         cur.close()
 
-        return books
+        return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "data": books
+    }
     
     @staticmethod
     def create_book (book:Book, conn):

@@ -19,3 +19,9 @@ class BookResponse (BaseModel):
     title : str
     author : str
     year : int
+
+class PaginatedBooks(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    data : list[BookResponse]

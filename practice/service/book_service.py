@@ -16,9 +16,9 @@ class BookService:
         return book
 
     @staticmethod
-    def get_books(conn, title:str = None, author: str = None):
+    def get_books(conn, title:str = None, author: str = None, limit:int = 10, offset:int = 0):
 
-        return BookRepository.get_books (conn, title, author)
+        return BookRepository.get_books (conn, title, author,limit,offset)
     
     @staticmethod
     def create_book (book:Book, conn):
