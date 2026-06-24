@@ -5,6 +5,7 @@ from service.book_service import BookService
 from dependencies import get_db
 from schemas.book import Book, UpdatedBook, BookResponse
 from fastapi import status
+from typing import Optional
 
 router = APIRouter() #a mini FastAPI app for books only
 
@@ -18,10 +19,13 @@ def create_book (book: Book, conn = Depends(get_db)):
 
 @router.get("/books",
             response_model= list [BookResponse]
+            
             ) #list[] bcuz repo returns a list of dicts
-def get_books(conn = Depends(get_db)):
+def get_books(title:Optional[str]=None,
+              author:Optional[str]=None,
+               conn = Depends(get_db)):
    
-   return BookService.get_books(conn)
+   return BookService.get_books(conn, title, author)
     
 
 @router.get ("/books/{book_id}",

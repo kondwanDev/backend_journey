@@ -4,14 +4,32 @@ from schemas.book import Book,UpdatedBook
 class BookRepository:
 
     @staticmethod
-    def get_books(conn):
+    def get_books(conn, title:str = None, author: str = None):
 
         cur = conn.cursor (row_factory = dict_row)
 
-        cur.execute ("SELECT * FROM books")
+        query = "SELECT * FROM books"
+
+        condition = []
+        params = []
+
+        if title:
+            condition.append ("title ILIKE %s")
+            params.append ("f%{title}%")
+        
+        if author:
+            condition.append ("author ILIKE %s")
+            params.append (f"%{author}%")
+
+        if condition:
+            query += " WHERE " + " AND ".join(condition)
+        
+        cur.execute (query, params)
+
         books = cur.fetchall()
         
         cur.close()
+
         return books
     
     @staticmethod
