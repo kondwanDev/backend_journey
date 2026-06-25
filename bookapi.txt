@@ -1,0 +1,4 @@
+Remove duplicate get_book_by_id calls (optimize service)
+Add soft delete (is_deleted = true)
+Add timestamps (updated_at)
+Handle transactions properly (rollback on failure)
