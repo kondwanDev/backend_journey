@@ -26,9 +26,11 @@ def get_books(title:Optional[str]=None,
               author:Optional[str]=None,
               limit:int = Query (10, ge=1),
               offset:int = Query (0, ge=0),
+              sort_by:str = Query ("id"),
+              order_by:str = Query ("desc"),
                conn = Depends(get_db)):
    
-   return BookService.get_books(conn, title, author, limit, offset)
+   return BookService.get_books(conn, title, author, limit, offset, sort_by, order_by)
     
 
 @router.get ("/books/{book_id}",

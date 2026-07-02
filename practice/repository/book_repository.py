@@ -4,7 +4,7 @@ from schemas.book import Book,UpdatedBook
 class BookRepository:
 
     @staticmethod
-    def get_books(conn, title:str = None, author: str = None, limit:int = 10, offset:int = 0):
+    def get_books(conn, title:str = None, author: str = None, limit:int = 10, offset:int = 0, sort_by:str = "id", order_by:str = "desc"):
 
         cur = conn.cursor (row_factory = dict_row)
 
@@ -33,7 +33,7 @@ class BookRepository:
         total = cur.fetchone()["total"] # count return one row "total"
 
         # pagination
-        query += " ORDER BY id DESC LIMIT %s OFFSET %s "
+        query += F" ORDER BY {sort_by} {order_by.upper()} LIMIT %s OFFSET %s "
         cur.execute (query, params + [limit, offset])
         books = cur.fetchall()
 

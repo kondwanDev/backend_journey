@@ -16,9 +16,28 @@ class BookService:
         return book
 
     @staticmethod
-    def get_books(conn, title:str = None, author: str = None, limit:int = 10, offset:int = 0):
+    def get_books(conn, title:str = None, author: str = None, limit:int = 10, offset:int = 0, sort_by:str = "id", order_by:str = "desc"):
+        
+        # validate sort columns
+        allowed_sort_fields = ["id","title","author","year"]
 
-        return BookRepository.get_books (conn, title, author,limit,offset)
+        if sort_by not in allowed_sort_fields:
+            raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
+                                 detail= f"invalid sort field: {sort_by}")
+        
+        # validate order order
+        allowed_order = ["asc", "desc"]
+
+        if order_by.lower() not in allowed_order:
+            raise HTTPException (status_code= status.HTTP_400_BAD_REQUEST,
+                                 detail= "order must be asc or desc")
+        
+        # normalize order
+
+        order_by = order_by.lower()
+
+
+        return BookRepository.get_books (conn, title, author,limit,offset, sort_by, order_by)
     
     @staticmethod
     def create_book (book:Book, conn):
