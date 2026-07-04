@@ -7,6 +7,7 @@ from schemas.book import Book, UpdatedBook, BookResponse, PaginatedBooks
 from fastapi import status
 from typing import Optional
 from fastapi import Query
+from dependency.auth import get_current_user
 
 router = APIRouter() #a mini FastAPI app for books only
 
@@ -28,6 +29,7 @@ def get_books(title:Optional[str]=None,
               offset:int = Query (0, ge=0),
               sort_by:str = Query ("id"),
               order_by:str = Query ("desc"),
+              current_user = Depends (get_current_user),
                conn = Depends(get_db)):
    
    return BookService.get_books(conn, title, author, limit, offset, sort_by, order_by)

@@ -27,6 +27,22 @@ class UserRepository:
         cur.close()
 
         return existing_username
+    
+    @staticmethod
+    def get_user_by_id (conn, user_id:int):
+
+        cur = conn.cursor (row_factory = dict_row)
+        
+        cur.execute ("""
+                     SELECT * FROM users WHERE id = %s
+                 """,
+                 (user_id,))
+        
+        user = cur.fetchone()
+
+        cur.close()
+
+        return user
 
     @staticmethod
     def create_user (conn, username: str, email:str, password_hash:str):
