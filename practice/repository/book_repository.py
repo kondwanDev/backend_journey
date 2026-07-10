@@ -13,7 +13,8 @@ class BookRepository:
 
         condition = []
         params = []
-
+        
+       # FILTERING 
         if title:
             condition.append ("title ILIKE %s")
             params.append (f"%{title}%")

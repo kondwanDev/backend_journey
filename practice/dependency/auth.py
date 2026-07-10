@@ -12,7 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer (
 def get_current_user (token: str = Depends (oauth2_scheme), conn = Depends (get_db)):
     payload = decode_access_token (token)
 
-    user_id = payload.get("id")
+    user_id = payload.get("sub")
 
     if user_id is None:
         raise HTTPException (
@@ -29,3 +29,16 @@ def get_current_user (token: str = Depends (oauth2_scheme), conn = Depends (get_
         )
 
     return current_user 
+
+def get_current_admin (
+        current_user = Depends(get_current_user)
+):
+    if current_user["role"].lower() != "admin":
+        raise HTTPException (
+            status_code= status.HTTP_403_FORBIDDEN,
+            detail= "Admin privillage required"
+        )
+   
+    
+    return current_user
+    

@@ -1,7 +1,8 @@
 from repository.user_repository import UserRepository
-from schemas.user import UserRegister, UserLogin
+from schemas.user import UserRegister
 from utils.security import hash_password, password_verify, create_access_token
 from  fastapi import HTTPException,status
+from fastapi.security import OAuth2PasswordRequestForm
 
 class UserService:
 
@@ -35,16 +36,16 @@ class UserService:
         return created_user
     
     @staticmethod
-    def login_user (user: UserLogin, conn):
+    def login_user (form_data: OAuth2PasswordRequestForm , conn):
 
-        existing_user = UserRepository.get_user_by_email(conn, user.email)
+        existing_user = UserRepository.get_user_by_email(conn, form_data.username)
         if existing_user is None:
             raise HTTPException (
                 status_code= status.HTTP_401_UNAUTHORIZED,
                 detail= "invalid email or password" #to prevent hacker to be aware which is wrong
             )
         
-        password_match = password_verify (user.password, existing_user["password_hash"])
+        password_match = password_verify (form_data.password, existing_user["password_hash"])
 
         if not password_match:
             raise HTTPException (

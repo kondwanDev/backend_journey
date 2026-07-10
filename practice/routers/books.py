@@ -7,7 +7,7 @@ from schemas.book import Book, UpdatedBook, BookResponse, PaginatedBooks
 from fastapi import status
 from typing import Optional
 from fastapi import Query
-from dependency.auth import get_current_user
+from dependency.auth import get_current_user, get_current_admin
 
 router = APIRouter() #a mini FastAPI app for books only
 
@@ -38,19 +38,19 @@ def get_books(title:Optional[str]=None,
 @router.get ("/books/{book_id}",
              response_model= BookResponse
              )
-def get_book_by_id (book_id: int, conn = Depends (get_db)):
+def get_book_by_id (book_id: int, current_user = Depends (get_current_user), conn = Depends (get_db)):
 
     return BookService.get_book_by_id (book_id, conn)
 
 @router.put ("/books/{book_id}",
              response_model= BookResponse
              )
-def update_book(book_id: int, book: Book, conn = Depends(get_db)):
+def update_book(book_id: int, book: Book, current_user = Depends (get_current_user), conn = Depends(get_db)):
 
    return BookService.update_book (book_id, book, conn)
 
 @router.delete ("/books/{book_id}", status_code= status.HTTP_204_NO_CONTENT)
-def delete_book (book_id: int, conn = Depends (get_db)):
+def delete_book (book_id: int, admin = Depends (get_current_admin), conn = Depends (get_db)):
 
     return BookService.delete_book (book_id, conn)
 
@@ -61,6 +61,7 @@ def delete_book (book_id: int, conn = Depends (get_db)):
 def patch_books (
     book_id: int,
     book: UpdatedBook,
+    current_user = Depends (get_current_user),
     conn = Depends(get_db)
 ):
   
